@@ -1,0 +1,93 @@
+<?php
+
+declare(strict_types=1);
+/**
+ * This file is part of hyperf-ext/auth.
+ *
+ * @link     https://github.com/hyperf-ext/auth
+ * @contact  eric@zhu.email
+ * @license  https://github.com/hyperf-ext/auth/blob/master/LICENSE
+ */
+namespace %NAMESPACE%;
+
+use HyperfExt\Auth\Access\HandlesAuthorization;
+use HyperfExt\Auth\Annotation\Policy;
+%USES%
+
+/**
+ * @Policy({\%NAMESPACED_MODEL%::class})
+ */
+class %CLASS%
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     *
+     * @return bool|\HyperfExt\Auth\Access\Response
+     */
+    public function viewAny(%USER_MODEL% $user)
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     *
+     * @return bool|\HyperfExt\Auth\Access\Response
+     */
+    public function view(%USER_MODEL% $user, %MODEL% $%MODEL_VARIABLE%)
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can create models.
+     *
+     * @return bool|\HyperfExt\Auth\Access\Response
+     */
+    public function create(%USER_MODEL% $user)
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     *
+     * @return bool|\HyperfExt\Auth\Access\Response
+     */
+    public function update(%USER_MODEL% $user, %MODEL% $%MODEL_VARIABLE%)
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     *
+     * @return bool|\HyperfExt\Auth\Access\Response
+     */
+    public function delete(%USER_MODEL% $user, %MODEL% $%MODEL_VARIABLE%)
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can restore the model.
+     *
+     * @return bool|\HyperfExt\Auth\Access\Response
+     */
+    public function restore(%USER_MODEL% $user, %MODEL% $%MODEL_VARIABLE%)
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user can permanently delete the model.
+     *
+     * @return bool|\HyperfExt\Auth\Access\Response
+     */
+    public function forceDelete(%USER_MODEL% $user, %MODEL% $%MODEL_VARIABLE%)
+    {
+        //
+    }
+}
