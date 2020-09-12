@@ -88,7 +88,7 @@ class PasswordBrokerManager implements PasswordBrokerManagerInterface
      */
     public function getDefaultDriver(): string
     {
-        return $this->config->get('auth.defaults.passwords');
+        return $this->config->get('auth.default.passwords');
     }
 
     /**

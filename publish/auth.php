@@ -20,7 +20,7 @@ return [
     |
     */
 
-    'defaults' => [
+    'default' => [
         'guard' => 'web',
         'passwords' => 'users',
     ],
@@ -44,17 +44,13 @@ return [
         'web' => [
             'driver' => \HyperfExt\Auth\Guards\SessionGuard::class,
             'provider' => 'users',
-            'options' => [
-                'name' => 'session',
-            ],
+            'options' => [],
         ],
 
         'api' => [
-            'driver' => \HyperfExt\Auth\Guards\TokenGuard::class,
+            'driver' => \HyperfExt\Auth\Guards\JwtGuard::class,
             'provider' => 'users',
-            'options' => [
-                'hash' => false,
-            ],
+            'options' => [],
         ],
     ],
 

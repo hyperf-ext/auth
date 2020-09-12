@@ -48,7 +48,8 @@
     },
     "suggest": {
         "hyperf/session": "Required to use session guard.",
-        "hyperf-ext/cookie": "Required to use session guard."
+        "hyperf-ext/cookie": "Required to use session guard.",
+        "hyperf-ext/jwt": "Required to use JWT guard."
     },
     "config": {
         "sort-packages": true

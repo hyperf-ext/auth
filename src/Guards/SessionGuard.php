@@ -12,30 +12,25 @@ namespace HyperfExt\Auth\Guards;
 
 use Hyperf\Contract\SessionInterface;
 use Hyperf\HttpMessage\Cookie\Cookie;
-use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\Utils\Str;
 use Hyperf\Utils\Traits\Macroable;
 use HyperfExt\Auth\Contracts\AuthenticatableInterface;
 use HyperfExt\Auth\Contracts\StatefulGuardInterface;
 use HyperfExt\Auth\Contracts\SupportsBasicAuthInterface;
 use HyperfExt\Auth\Contracts\UserProviderInterface;
-use HyperfExt\Auth\Events\Attempting;
-use HyperfExt\Auth\Events\Authenticated;
-use HyperfExt\Auth\Events\CurrentDeviceLogout;
-use HyperfExt\Auth\Events\Failed;
-use HyperfExt\Auth\Events\Login;
+use HyperfExt\Auth\EventHelpers;
 use HyperfExt\Auth\Events\Logout;
-use HyperfExt\Auth\Events\OtherDeviceLogout;
-use HyperfExt\Auth\Events\Validated;
 use HyperfExt\Auth\Exceptions\AuthenticationException;
 use HyperfExt\Auth\GuardHelpers;
 use HyperfExt\Auth\Recaller;
 use HyperfExt\Cookie\Contract\CookieJarInterface;
 use HyperfExt\Hashing\Hash;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
 {
+    use EventHelpers;
     use GuardHelpers;
     use Macroable;
 
@@ -79,7 +74,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
     /**
      * The request instance.
      *
-     * @var \Hyperf\HttpServer\Contract\RequestInterface
+     * @var \Psr\Http\Message\ServerRequestInterface
      */
     protected $request;
 
@@ -108,11 +103,12 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
      * Create a new authentication guard.
      */
     public function __construct(
-        RequestInterface $request,
+        ServerRequestInterface $request,
         SessionInterface $session,
         EventDispatcherInterface $eventDispatcher,
         CookieJarInterface $cookieJar,
         UserProviderInterface $provider,
+        string $name,
         array $options = []
     ) {
         $this->request = $request;
@@ -145,7 +141,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
         // one exists. Otherwise we will check for a "remember me" cookie in this
         // request, and if one exists, attempt to retrieve the user using that.
         if (! is_null($id) && $this->user = $this->provider->retrieveById($id)) {
-            $this->fireAuthenticatedEvent($this->user);
+            $this->dispatchAuthenticatedEvent($this->user);
         }
 
         // If the user is null, but we decrypt a "recaller" cookie we can attempt to
@@ -157,7 +153,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
             if ($this->user) {
                 $this->updateSession($this->user->getAuthIdentifier());
 
-                $this->fireLoginEvent($this->user, true);
+                $this->dispatchLoginEvent($this->user, true);
             }
         }
 
@@ -185,7 +181,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
      */
     public function once(array $credentials = []): bool
     {
-        $this->fireAttemptEvent($credentials);
+        $this->dispatchAttemptingEvent($credentials);
 
         if ($this->validate($credentials)) {
             $this->setUser($this->lastAttempted);
@@ -258,9 +254,9 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
     /**
      * Attempt to authenticate a user using the given credentials.
      */
-    public function attempt(array $credentials = [], bool $remember = false): bool
+    public function attempt(array $credentials = [], bool $remember = false)
     {
-        $this->fireAttemptEvent($credentials, $remember);
+        $this->dispatchAttemptingEvent($credentials, $remember);
 
         $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
 
@@ -276,7 +272,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
         // If the authentication attempt fails we will fire an event so that the user
         // may be notified of any suspicious attempts to access their account from
         // an unrecognized user. A developer may listen to this event as needed.
-        $this->fireFailedEvent($user, $credentials);
+        $this->dispatchFailedEvent($user, $credentials);
 
         return false;
     }
@@ -300,7 +296,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
     /**
      * Log a user into the application.
      */
-    public function login(AuthenticatableInterface $user, bool $remember = false): void
+    public function login(AuthenticatableInterface $user, bool $remember = false)
     {
         $this->updateSession($user->getAuthIdentifier());
 
@@ -316,7 +312,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
         // If we have an event dispatcher instance set we will fire an event so that
         // any listeners will hook into the authentication events and run actions
         // based on the login and logout events fired from the guard instances.
-        $this->fireLoginEvent($user, $remember);
+        $this->dispatchLoginEvent($user, $remember);
 
         $this->setUser($user);
     }
@@ -324,7 +320,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
     /**
      * Log the user out of the application.
      */
-    public function logout(): void
+    public function logout()
     {
         $user = $this->user();
 
@@ -334,7 +330,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
             $this->cycleRememberToken($user);
         }
 
-        $this->eventDispatcher->dispatch(new Logout($this->name, $user));
+        $this->dispatchLogoutEvent($user);
 
         // Once we have fired the logout event we will clear the users out of memory
         // so they are no longer available as the user is no longer considered as
@@ -353,7 +349,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
 
         $this->clearUserDataFromStorage();
 
-        $this->eventDispatcher->dispatch(new CurrentDeviceLogout($this->name, $user));
+        $this->dispatchCurrentDeviceLogoutEvent($user);
 
         // Once we have fired the logout event we will clear the users out of memory
         // so they are no longer available as the user is no longer considered as
@@ -382,7 +378,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
             $this->queueRecallerCookie($this->user());
         }
 
-        $this->fireOtherDeviceLogoutEvent($this->user());
+        $this->dispatchOtherDeviceLogoutEvent($this->user());
 
         return $result;
     }
@@ -460,17 +456,15 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
 
         $this->loggedOut = false;
 
-        $this->fireAuthenticatedEvent($user);
+        $this->dispatchAuthenticatedEvent($user);
 
         return $this;
     }
 
     /**
      * Get the current request instance.
-     *
-     * @return \Hyperf\HttpServer\Contract\RequestInterface
      */
-    public function getRequest()
+    public function getRequest(): ServerRequestInterface
     {
         return $this->request;
     }
@@ -478,11 +472,9 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
     /**
      * Set the current request instance.
      *
-     * @param \Hyperf\HttpServer\Contract\RequestInterface
-     * @param mixed $request
      * @return $this
      */
-    public function setRequest($request)
+    public function setRequest(ServerRequestInterface $request)
     {
         $this->request = $request;
         return $this;
@@ -546,9 +538,9 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
     /**
      * Attempt to authenticate using basic authentication.
      */
-    protected function attemptBasic(RequestInterface $request, string $field, array $extraConditions = []): bool
+    protected function attemptBasic(ServerRequestInterface $request, string $field, array $extraConditions = []): bool
     {
-        if (empty($request->header('Authorization'))) {
+        if (empty($request->getHeaderLine('Authorization'))) {
             return false;
         }
 
@@ -563,18 +555,18 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
      *
      * @return string[]
      */
-    protected function basicCredentials(RequestInterface $request, string $field): array
+    protected function basicCredentials(ServerRequestInterface $request, string $field): array
     {
-        $authorization = $this->getBasicAuthorization();
+        $authorization = $this->getBasicAuthorization($request);
         return array_combine([$field, 'password'], $authorization);
     }
 
     /**
      * @return string[]
      */
-    protected function getBasicAuthorization(): array
+    protected function getBasicAuthorization(ServerRequestInterface $request): array
     {
-        $header = $this->request->header('Authorization');
+        $header = $request->getHeaderLine('Authorization');
 
         if (Str::startsWith($header, 'Basic ')) {
             try {
@@ -605,7 +597,7 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
         $validated = ! is_null($user) && $this->provider->validateCredentials($user, $credentials);
 
         if ($validated) {
-            $this->fireValidatedEvent($user);
+            $this->dispatchValidatedEvent($user);
         }
 
         return $validated;
@@ -671,74 +663,5 @@ class SessionGuard implements StatefulGuardInterface, SupportsBasicAuthInterface
         $user->setRememberToken($token = Str::random(60));
 
         $this->provider->updateRememberToken($user, $token);
-    }
-
-    /**
-     * Fire the attempt event with the arguments.
-     */
-    protected function fireAttemptEvent(array $credentials, bool $remember = false): void
-    {
-        $this->eventDispatcher->dispatch(new Attempting(
-            $this->name,
-            $credentials,
-            $remember
-        ));
-    }
-
-    /**
-     * Fires the validated event if the dispatcher is set.
-     */
-    protected function fireValidatedEvent(AuthenticatableInterface $user)
-    {
-        $this->eventDispatcher->dispatch(new Validated(
-            $this->name,
-            $user
-        ));
-    }
-
-    /**
-     * Fire the login event if the dispatcher is set.
-     */
-    protected function fireLoginEvent(AuthenticatableInterface $user, bool $remember = false): void
-    {
-        $this->eventDispatcher->dispatch(new Login(
-            $this->name,
-            $user,
-            $remember
-        ));
-    }
-
-    /**
-     * Fire the authenticated event if the dispatcher is set.
-     */
-    protected function fireAuthenticatedEvent(AuthenticatableInterface $user): void
-    {
-        $this->eventDispatcher->dispatch(new Authenticated(
-            $this->name,
-            $user
-        ));
-    }
-
-    /**
-     * Fire the other device logout event if the dispatcher is set.
-     */
-    protected function fireOtherDeviceLogoutEvent(AuthenticatableInterface $user): void
-    {
-        $this->eventDispatcher->dispatch(new OtherDeviceLogout(
-            $this->name,
-            $user
-        ));
-    }
-
-    /**
-     * Fire the failed authentication attempt event with the given arguments.
-     */
-    protected function fireFailedEvent(?AuthenticatableInterface $user, array $credentials): void
-    {
-        $this->eventDispatcher->dispatch(new Failed(
-            $this->name,
-            $user,
-            $credentials
-        ));
     }
 }

@@ -21,6 +21,8 @@ Gate 可以通过注入 `HyperfExt\Auth\Contracts\Access\GateManagerInterface` �
 
 策略可以通过 `gen:policy` 命令来创建，例如 `gen:policy PostPolicy --model=App\\Model\\Post`。也可以在配置文件的 `policies` 中定义模型类和策略类的映射。
 
+如需使用 JWT，请额外安装 [`hyperf-ext/jwt`](https://github.com/hyperf-ext/jwt) 组件。
+
 ## 安装
 
 ```shell script

@@ -10,12 +10,12 @@ declare(strict_types=1);
  */
 namespace HyperfExt\Auth\Guards;
 
-use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\Utils\Str;
 use HyperfExt\Auth\Contracts\AuthenticatableInterface;
 use HyperfExt\Auth\Contracts\GuardInterface;
 use HyperfExt\Auth\Contracts\UserProviderInterface;
 use HyperfExt\Auth\GuardHelpers;
+use Psr\Http\Message\ServerRequestInterface;
 
 class TokenGuard implements GuardInterface
 {
@@ -24,7 +24,7 @@ class TokenGuard implements GuardInterface
     /**
      * The request instance.
      *
-     * @var \Hyperf\HttpServer\Contract\RequestInterface
+     * @var \Psr\Http\Message\ServerRequestInterface
      */
     protected $request;
 
@@ -53,8 +53,9 @@ class TokenGuard implements GuardInterface
      * Create a new authentication guard.
      */
     public function __construct(
-        RequestInterface $request,
+        ServerRequestInterface $request,
         UserProviderInterface $provider,
+        string $name,
         array $options = []
     ) {
         $this->request = $request;
@@ -134,7 +135,7 @@ class TokenGuard implements GuardInterface
      *
      * @return $this
      */
-    public function setRequest(RequestInterface $request)
+    public function setRequest(ServerRequestInterface $request)
     {
         $this->request = $request;
 

@@ -15,7 +15,7 @@ interface AuthManagerInterface
     /**
      * Get a guard instance by name.
      *
-     * @return \HyperfExt\Auth\Contracts\GuardInterface|\HyperfExt\Auth\Contracts\StatefulGuardInterface
+     * @return \HyperfExt\Auth\Contracts\GuardInterface|\HyperfExt\Auth\Contracts\StatefulGuardInterface|\HyperfExt\Auth\Contracts\StatelessGuardInterface
      */
     public function guard(?string $name = null): GuardInterface;
 

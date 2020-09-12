@@ -17,7 +17,7 @@ use Hyperf\Utils\Str;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-class GenPolicyCommand extends HyperfCommand
+class GenAuthPolicyCommand extends HyperfCommand
 {
     /**
      * @var \Hyperf\Contract\ConfigInterface
@@ -26,7 +26,7 @@ class GenPolicyCommand extends HyperfCommand
 
     public function __construct(ConfigInterface $config)
     {
-        parent::__construct('gen:policy');
+        parent::__construct('gen:auth-policy');
         $this->config = $config;
     }
 
@@ -49,7 +49,7 @@ class GenPolicyCommand extends HyperfCommand
         $option = new PolicyOption();
         $option
             ->setPath($this->getOption('path', 'app/Policy'))
-            ->setGuard($this->getOption('guard'), $this->config->get('auth.defaults.guard', null))
+            ->setGuard($this->getOption('guard', $this->config->get('auth.default.guard', null)))
             ->setModel($this->getOption('model'));
         $this->createPolicy($name, $option);
     }
@@ -138,7 +138,7 @@ class GenPolicyCommand extends HyperfCommand
      */
     protected function getUserProviderModel(?string $guard = null): ?string
     {
-        $guard = $guard ?: $this->config->get('auth.defaults.guard');
+        $guard = $guard ?: $this->config->get('auth.default.guard');
 
         return $this->config->get(
             'auth.providers.' . $this->config->get('auth.guards.' . $guard . '.provider') . '.options.model'

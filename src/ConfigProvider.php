@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace HyperfExt\Auth;
 
 use HyperfExt\Auth\Access\GateManager;
-use HyperfExt\Auth\Commands\GenPolicyCommand;
+use HyperfExt\Auth\Commands\GenAuthPolicyCommand;
 use HyperfExt\Auth\Contracts\Access\GateManagerInterface;
 use HyperfExt\Auth\Contracts\AuthManagerInterface;
 use HyperfExt\Auth\Contracts\PasswordBrokerManagerInterface;
@@ -38,7 +38,7 @@ class ConfigProvider
                 ],
             ],
             'commands' => [
-                GenPolicyCommand::class,
+                GenAuthPolicyCommand::class,
             ],
             'publish' => [
                 [

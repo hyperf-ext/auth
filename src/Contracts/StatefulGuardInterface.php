@@ -14,8 +14,9 @@ interface StatefulGuardInterface extends GuardInterface
 {
     /**
      * Attempt to authenticate a user using the given credentials.
+     * @return bool|mixed
      */
-    public function attempt(array $credentials = [], bool $remember = false): bool;
+    public function attempt(array $credentials = [], bool $remember = false);
 
     /**
      * Log a user into the application without sessions or cookies.
@@ -26,8 +27,9 @@ interface StatefulGuardInterface extends GuardInterface
      * Log a user into the application.
      *
      * @param \HyperfExt\Auth\Contracts\AuthenticatableInterface $user
+     * @return mixed|void
      */
-    public function login(AuthenticatableInterface $user, bool $remember = false): void;
+    public function login(AuthenticatableInterface $user, bool $remember = false);
 
     /**
      * Log the given user ID into the application.
@@ -54,6 +56,7 @@ interface StatefulGuardInterface extends GuardInterface
 
     /**
      * Log the user out of the application.
+     * @return mixed|void
      */
-    public function logout(): void;
+    public function logout();
 }

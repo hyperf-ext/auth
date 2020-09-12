@@ -75,7 +75,7 @@ class AuthManager implements AuthManagerInterface
      */
     public function getDefaultDriver(): string
     {
-        return $this->config->get('auth.defaults.guard');
+        return $this->config->get('auth.default.guard');
     }
 
     /**
@@ -95,7 +95,7 @@ class AuthManager implements AuthManagerInterface
      */
     public function setDefaultDriver(string $name)
     {
-        $this->config->set('auth.defaults.guard', $name);
+        $this->config->set('auth.default.guard', $name);
     }
 
     /**
@@ -127,7 +127,7 @@ class AuthManager implements AuthManagerInterface
      */
     public function createUserProvider(?string $provider = null): ?UserProviderInterface
     {
-        $provider = $provider ?: $this->config->get('auth.defaults.provider', null);
+        $provider = $provider ?: $this->config->get('auth.default.provider', null);
 
         $config = $this->config->get('auth.providers.' . $provider);
 
@@ -168,7 +168,7 @@ class AuthManager implements AuthManagerInterface
         $provider = $this->createUserProvider($config['provider'] ?? null);
         $options = $config['options'] ?? [];
 
-        return make($config['driver'], compact('provider', 'options'));
+        return make($config['driver'], compact('provider', 'name', 'options'));
     }
 
     protected function getUserResolverClosure()
