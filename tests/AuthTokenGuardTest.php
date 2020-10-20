@@ -8,6 +8,7 @@ declare(strict_types=1);
  * @contact  eric@zhu.email
  * @license  https://github.com/hyperf-ext/auth/blob/master/LICENSE
  */
+
 namespace HyperfTest;
 
 use Hyperf\HttpServer\Request;
@@ -37,7 +38,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['api_token' => 'foo'])->andReturn($user);
         $request = $this->createRequest(['api_token' => 'foo']);
 
-        $guard = new TokenGuard($request, $provider);
+        $guard = new TokenGuard($request, $provider, 'foo');
 
         $user = $guard->user();
 
@@ -55,7 +56,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['api_token' => hash('sha256', 'foo')])->andReturn($user);
         $request = $this->createRequest(['api_token' => 'foo']);
 
-        $guard = new TokenGuard($request, $provider, [
+        $guard = new TokenGuard($request, $provider, 'foo', [
             'input_key' => 'api_token',
             'storage_key' => 'api_token',
             'hash' => true,
@@ -75,7 +76,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['api_token' => 'foo'])->andReturn(new AuthTokenGuardTestUser());
         $request = $this->createRequest([], ['Authorization' => 'Basic ' . base64_encode('foo:foo')]);
 
-        $guard = new TokenGuard($request, $provider);
+        $guard = new TokenGuard($request, $provider, 'foo');
 
         $user = $guard->user();
 
@@ -88,7 +89,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['api_token' => 'foo'])->andReturn(new AuthTokenGuardTestUser());
         $request = $this->createRequest([], ['Authorization' => 'Bearer foo']);
 
-        $guard = new TokenGuard($request, $provider);
+        $guard = new TokenGuard($request, $provider, 'foo');
 
         $user = $guard->user();
 
@@ -103,7 +104,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['api_token' => 'foo'])->andReturn($user);
         $request = $this->createRequest(['api_token' => 'foo']);
 
-        $guard = new TokenGuard($request, $provider);
+        $guard = new TokenGuard($request, $provider, 'foo');
 
         $this->assertTrue($guard->validate(['api_token' => 'foo']));
     }
@@ -114,7 +115,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['api_token' => 'foo'])->andReturn(null);
         $request = $this->createRequest(['api_token' => 'foo']);
 
-        $guard = new TokenGuard($request, $provider);
+        $guard = new TokenGuard($request, $provider, 'foo');
 
         $this->assertFalse($guard->validate(['api_token' => 'foo']));
     }
@@ -124,7 +125,7 @@ class AuthTokenGuardTest extends TestCase
         $provider = m::mock(UserProviderInterface::class);
         $request = $this->createRequest(['api_token' => 'foo']);
 
-        $guard = new TokenGuard($request, $provider);
+        $guard = new TokenGuard($request, $provider, 'foo');
 
         $this->assertFalse($guard->validate(['api_token' => '']));
     }
@@ -137,7 +138,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['api_token' => 'custom'])->andReturn($user);
         $request = $this->createRequest(['api_token' => 'foo']);
 
-        $guard = new TokenGuard($request, $provider);
+        $guard = new TokenGuard($request, $provider, 'foo');
         $guard->setRequest($this->createRequest(['api_token' => 'custom']));
 
         $user = $guard->user();
@@ -151,7 +152,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['custom_token_field' => 'foo'])->andReturn(new AuthTokenGuardTestUser());
         $request = $this->createRequest([], ['Authorization' => 'Bearer foo']);
 
-        $guard = new TokenGuard($request, $provider, [
+        $guard = new TokenGuard($request, $provider, 'foo', [
             'input_key' => 'custom_token_field',
             'storage_key' => 'custom_token_field',
         ]);
@@ -169,7 +170,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['custom_token_field' => 'foo'])->andReturn($user);
         $request = $this->createRequest(['custom_token_field' => 'foo']);
 
-        $guard = new TokenGuard($request, $provider, [
+        $guard = new TokenGuard($request, $provider, 'foo', [
             'input_key' => 'custom_token_field',
             'storage_key' => 'custom_token_field',
         ]);
@@ -188,7 +189,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['custom_token_field' => 'foo'])->andReturn(new AuthTokenGuardTestUser());
         $request = $this->createRequest([], ['Authorization' => 'Basic ' . base64_encode('foo:foo')]);
 
-        $guard = new TokenGuard($request, $provider, [
+        $guard = new TokenGuard($request, $provider, 'foo', [
             'input_key' => 'custom_token_field',
             'storage_key' => 'custom_token_field',
         ]);
@@ -206,7 +207,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['custom_token_field' => 'foo'])->andReturn($user);
         $request = $this->createRequest(['custom_token_field' => 'foo']);
 
-        $guard = new TokenGuard($request, $provider, [
+        $guard = new TokenGuard($request, $provider, 'foo', [
             'input_key' => 'custom_token_field',
             'storage_key' => 'custom_token_field',
         ]);
@@ -220,7 +221,7 @@ class AuthTokenGuardTest extends TestCase
         $provider->shouldReceive('retrieveByCredentials')->once()->with(['custom_token_field' => 'foo'])->andReturn(null);
         $request = $this->createRequest(['custom_token_field' => 'foo']);
 
-        $guard = new TokenGuard($request, $provider, [
+        $guard = new TokenGuard($request, $provider, 'foo', [
             'input_key' => 'custom_token_field',
             'storage_key' => 'custom_token_field',
         ]);
@@ -233,7 +234,7 @@ class AuthTokenGuardTest extends TestCase
         $provider = m::mock(UserProviderInterface::class);
         $request = $this->createRequest(['custom_token_field' => '']);
 
-        $guard = new TokenGuard($request, $provider, [
+        $guard = new TokenGuard($request, $provider, 'foo', [
             'input_key' => 'custom_token_field',
             'storage_key' => 'custom_token_field',
         ]);

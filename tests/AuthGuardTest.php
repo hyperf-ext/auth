@@ -8,10 +8,12 @@ declare(strict_types=1);
  * @contact  eric@zhu.email
  * @license  https://github.com/hyperf-ext/auth/blob/master/LICENSE
  */
+
 namespace HyperfTest;
 
 use Hyperf\Contract\SessionInterface;
 use Hyperf\HttpMessage\Cookie\Cookie;
+use HyperfExt\Cookie\Contract\CookieJarInterface;
 use Hyperf\HttpMessage\Uri\Uri;
 use Hyperf\HttpServer\Request;
 use Hyperf\Utils\Context;
@@ -559,17 +561,15 @@ class AuthGuardTest extends TestCase
             new Request(),
             m::mock(SessionInterface::class),
             m::mock(EventDispatcherInterface::class),
-            m::mock(CookieJar::class),
+            m::mock(CookieJarInterface::class),
             m::mock(UserProviderInterface::class),
-            [
-                'name' => 'foo',
-            ],
+            'foo',
         ];
     }
 
     protected function getCookieJar()
     {
         return new CookieJar();
-//        return new CookieJar(Request::create('/foo', 'GET'), m::mock(Encrypter::class), ['domain' => 'foo.com', 'path' => '/', 'secure' => false, 'httpOnly' => false]);
+        //        return new CookieJar(Request::create('/foo', 'GET'), m::mock(Encrypter::class), ['domain' => 'foo.com', 'path' => '/', 'secure' => false, 'httpOnly' => false]);
     }
 }

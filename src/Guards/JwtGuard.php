@@ -8,6 +8,7 @@ declare(strict_types=1);
  * @contact  eric@zhu.email
  * @license  https://github.com/hyperf-ext/auth/blob/master/LICENSE
  */
+
 namespace HyperfExt\Auth\Guards;
 
 use BadMethodCallException;
@@ -113,7 +114,8 @@ class JwtGuard implements StatelessGuardInterface
             return $this->user;
         }
 
-        if ($this->jwt->getToken() and
+        if (
+            $this->jwt->getToken() and
             ($payload = $this->jwt->check(true)) and
             $this->validateSubject() and
             ($this->user = $this->provider->retrieveById($payload['sub']))
@@ -132,7 +134,7 @@ class JwtGuard implements StatelessGuardInterface
      */
     public function userOrFail(): AuthenticatableInterface
     {
-        if (! $user = $this->user()) {
+        if (!$user = $this->user()) {
             throw new UserNotDefinedException();
         }
 
@@ -188,7 +190,7 @@ class JwtGuard implements StatelessGuardInterface
      */
     public function loginUsingId($id)
     {
-        if (! is_null($user = $this->provider->retrieveById($id))) {
+        if (!is_null($user = $this->provider->retrieveById($id))) {
             return $this->login($user);
         }
 
@@ -312,7 +314,7 @@ class JwtGuard implements StatelessGuardInterface
      */
     protected function hasValidCredentials(?AuthenticatableInterface $user, array $credentials): bool
     {
-        $validated = $user !== null and $this->provider->validateCredentials($user, $credentials);
+        $validated = ($user !== null and $this->provider->validateCredentials($user, $credentials));
 
         if ($validated) {
             $this->dispatchValidatedEvent($user);
@@ -330,7 +332,7 @@ class JwtGuard implements StatelessGuardInterface
     {
         // If the provider doesn't have the necessary method
         // to get the underlying model name then allow.
-        if (! method_exists($this->provider, 'getModel')) {
+        if (!method_exists($this->provider, 'getModel')) {
             return true;
         }
 
@@ -344,7 +346,7 @@ class JwtGuard implements StatelessGuardInterface
      */
     protected function requireToken(): Jwt
     {
-        if (! $this->jwt->getToken()) {
+        if (!$this->jwt->getToken()) {
             throw new JwtException('Token could not be parsed from the request.');
         }
 
