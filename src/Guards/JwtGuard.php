@@ -312,7 +312,7 @@ class JwtGuard implements StatelessGuardInterface
      */
     protected function hasValidCredentials(?AuthenticatableInterface $user, array $credentials): bool
     {
-        $validated = $user !== null and $this->provider->validateCredentials($user, $credentials);
+        $validated = ($user !== null and $this->provider->validateCredentials($user, $credentials));
 
         if ($validated) {
             $this->dispatchValidatedEvent($user);
