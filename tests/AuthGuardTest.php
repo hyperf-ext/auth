@@ -8,12 +8,10 @@ declare(strict_types=1);
  * @contact  eric@zhu.email
  * @license  https://github.com/hyperf-ext/auth/blob/master/LICENSE
  */
-
 namespace HyperfTest;
 
 use Hyperf\Contract\SessionInterface;
 use Hyperf\HttpMessage\Cookie\Cookie;
-use HyperfExt\Cookie\Contract\CookieJarInterface;
 use Hyperf\HttpMessage\Uri\Uri;
 use Hyperf\HttpServer\Request;
 use Hyperf\Utils\Context;
@@ -29,6 +27,7 @@ use HyperfExt\Auth\Events\Validated;
 use HyperfExt\Auth\Exceptions\AuthenticationException;
 use HyperfExt\Auth\Guards\SessionGuard;
 use HyperfExt\Auth\Recaller;
+use HyperfExt\Cookie\Contract\CookieJarInterface;
 use HyperfExt\Cookie\CookieJar;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;

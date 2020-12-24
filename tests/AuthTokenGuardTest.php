@@ -8,13 +8,14 @@ declare(strict_types=1);
  * @contact  eric@zhu.email
  * @license  https://github.com/hyperf-ext/auth/blob/master/LICENSE
  */
-
 namespace HyperfTest;
 
 use Hyperf\HttpServer\Request;
 use Hyperf\Utils\Context;
+use HyperfExt\Auth\Contracts\AuthenticatableInterface;
 use HyperfExt\Auth\Contracts\UserProviderInterface;
 use HyperfExt\Auth\Guards\TokenGuard;
+use HyperfExt\Jwt\Contracts\JwtSubjectInterface;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
@@ -250,12 +251,22 @@ class AuthTokenGuardTest extends TestCase
     }
 }
 
-class AuthTokenGuardTestUser extends User
+class AuthTokenGuardTestUser extends User implements AuthenticatableInterface, JwtSubjectInterface
 {
     public $id;
 
     public function getAuthIdentifier()
     {
         return $this->id;
+    }
+
+    public function getJwtIdentifier()
+    {
+        return $this->id;
+    }
+
+    public function getJwtCustomClaims(): array
+    {
+        return [];
     }
 }
