@@ -43,7 +43,7 @@ class ConfigProvider
             'publish' => [
                 [
                     'id' => 'config',
-                    'description' => 'The config for HyperfExt\\Auth.',
+                    'description' => 'The config for hyperf-ext/auth.',
                     'source' => __DIR__ . '/../publish/auth.php',
                     'destination' => BASE_PATH . '/config/autoload/auth.php',
                 ],
