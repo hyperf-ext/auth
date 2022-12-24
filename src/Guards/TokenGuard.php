@@ -93,7 +93,7 @@ class TokenGuard implements GuardInterface
     /**
      * Get the token for the current request.
      */
-    public function getTokenForRequest(): string
+    public function getTokenForRequest(): string|null
     {
         $token = $this->request->query($this->inputKey);
 
