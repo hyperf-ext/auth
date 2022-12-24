@@ -162,7 +162,7 @@ class TokenGuard implements GuardInterface
      */
     protected function getBasicAuthorization(): array
     {
-        $header = $this->request->header('Authorization');
+        $header = $this->request->header('Authorization', '');
 
         if (Str::startsWith($header, 'Basic ')) {
             try {
