@@ -13,7 +13,7 @@ namespace HyperfExt\Auth\Guards;
 use Hyperf\Contract\SessionInterface;
 use Hyperf\HttpMessage\Cookie\Cookie;
 use Hyperf\Utils\Str;
-use Hyperf\Utils\Traits\Macroable;
+use Hyperf\Macroable\Macroable;
 use HyperfExt\Auth\Contracts\AuthenticatableInterface;
 use HyperfExt\Auth\Contracts\StatefulGuardInterface;
 use HyperfExt\Auth\Contracts\SupportsBasicAuthInterface;
